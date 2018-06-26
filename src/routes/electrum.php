@@ -32,6 +32,13 @@ if (config('electrum.web_interface.enabled', false)) {
                 Route::delete('{address}', 'AraneaDev\Electrum\App\Api\RequestsController@destroy')
                     ->where('address', '^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$');
             });
+
+            Route::prefix('payment')->group(function () {
+                Route::post('/', 'AraneaDev\Electrum\App\Api\PaymentController@create');
+                Route::post('/sign', 'AraneaDev\Electrum\App\Api\PaymentController@sign');
+                Route::post('/broadcast', 'AraneaDev\Electrum\App\Api\PaymentController@broadcast');
+                Route::post('/getmax', 'AraneaDev\Electrum\App\Api\PaymentController@getmax');
+            });
         });
     });
 }

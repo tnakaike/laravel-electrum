@@ -373,6 +373,56 @@ class Electrum
     }
 
     /**
+     * Create a new payment.
+     *
+     * @param string $destination
+     * @param float  $amount
+     * @param string password
+     *
+     * @return object
+     */
+    public function createPayment($destination = '', $amount = 0.00, $password = '')
+    {
+        return $this->sendRequest('payto', [
+            'destination'=> $destination,
+            'amount'     => $amount,
+	    'password'   => $password,
+        ]);
+    }
+
+    /**
+     * Sign a transaction.
+     *
+     * @param string $tx
+     * @param string $password
+     *
+     * @return object
+     */
+    public function sign($tx = '', $password = '')
+    {
+        return $this->sendRequest('signtransaction', [
+            'tx'       => $tx,
+	    'password' => $password
+        ]);
+    }
+
+    /**
+     * Get the maximumm amount that can be sent.
+     *
+     * @param string $destination
+     * @param string $password
+     *
+     * @return object
+     */
+    public function getmax($destination = '', $password = '')
+    {
+        return $this->sendRequest('getmax', [
+            'destination' => $destination,
+	    'password'    => $password
+        ]);
+    }
+
+    /**
      * Send a request to the Electrum JSON RPC API.
      *
      * @param $method
