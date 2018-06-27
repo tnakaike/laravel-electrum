@@ -30,6 +30,12 @@
                     <li :class="{active: active === '#receive'}">
                         <a data-toggle="tab" href="#receive" @click="setHash('receive')">Receive</a>
                     </li>
+                    <li :class="{active: active === '#send'}">
+                        <a data-toggle="tab" href="#send" @click="setHash('send')">Send</a>
+                    </li>
+                    <li :class="{active: active === '#sign'}">
+                        <a data-toggle="tab" href="#sign" @click="setHash('sign')">Sign</a>
+                    </li>
                 </ul>
 
                 <div class="tab-content">
@@ -207,8 +213,119 @@
                             </div>
                         </div>
                     </div>
+                    <div id="send" class="tab-pane fade" :class="{'in active': active === '#send'}">
+                        <div class="row mt-8">
+                            <div class="col-md-9">
+                                <div class="form-group">
+                                    <label>Destination address</label>
+                                    <div class="input-group input-group-sm col-xs-10">
+                                        <input type="text" v-model="payment.destination" class="form-control input-lg">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Wallet password</label>
+                                    <div class="input-group input-group-sm col-xs-10">
+                                        <input type="password" v-model="payment.password" class="form-control input-lg">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label>Amount in BTC</label>
+                                            <div class="input-group input-group-sm">
+                                                <input type="text" v-model="payment.amount"
+                                                       class="form-control input-sm">
+                                                <span class="input-group-addon">
+                                                    BTC
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label>Amount in {{ pair }}</label>
+                                            <div class="input-group input-group-sm">
+                                                <input type="text" v-model="pay_in_fiat"
+                                                       class="form-control input-sm">
+                                                <span class="input-group-addon">
+                                                    {{ pair }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+				        <label style="color:white">Max</label>
+                                        <div class="form-group">
+                                            <button type="button" class="btn btn-default btn-sm"
+                                                    @click="getmax()"
+                                                    :disabled="payment.destination === null || payment.password === null">
+                                                <span class="glyphicon glyphicon-send"></span> Max
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+				        <label style="color:white">Send</label>
+                                        <div class="form-group">
+                                            <button type="button" class="btn btn-default btn-sm"
+                                                    @click="createPayment"
+                                                    :disabled="payment.amount === 0 || pay_in_fiat === 0 || payment.destination === null || payment.password === null">
+                                                <span class="glyphicon glyphicon-send"></span> Send
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Partial transaction</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="text" v-model="partial_tx_for_payment.hex" class="form-control address"
+                                               disabled>
+                                        <span class="input-group-btn">
+                                            <button type="button" class="btn btn-default copy"
+                                                    :data-clipboard-text="partial_tx_for_payment.hex">Copy</button>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Signed transaction</label>
+                                    <div class="input-group input-group-sm col-xs-10">
+                                        <input type="text" v-model="signed_tx.tx" class="form-control address"
+                                               disabled>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="sign" class="tab-pane fade" :class="{'in active': active === '#sign'}">
+                        <div class="row mt-8">
+                            <div class="col-md-9">
+                                <div class="form-group">
+                                    <label>Partially-signed transaction</label>
+                                    <div class="input-group input-group-sm col-xs-10">
+                                        <input type="text" v-model="partial_tx_for_signing.hex" class="form-control input-lg">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Wallet password</label>
+                                    <div class="input-group input-group-sm col-xs-10">
+                                        <input type="password" v-model="partial_tx_for_signing.password" class="form-control input-lg">
+                                        <span class="input-group-btn">
+					    <button type="button" class="btn btn-default btn-sm"
+						    @click="sign"
+						    :disabled="partial_tx_for_signing.hex === null || partial_tx_for_signing.password === null">Sign</button>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Singned transaction</label>
+                                    <div class="input-group input-group-sm col-xs-10">
+                                        <input type="text" v-model="signed_tx.tx" class="form-control address"
+                                               disabled>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-
             </div>
             <div class="panel-footer">
                 <div class="status pull-right">
@@ -339,6 +456,7 @@
                 timer: false,
                 pair: null,
                 in_fiat: 0,
+                pay_in_fiat: 0,
                 ticker: {},
                 balance: {
                     confirmed: 0,
@@ -387,7 +505,45 @@
                     timestamp: 0,
                     txid: null,
                     value: 0
-                }
+                },
+
+                /** Payment model */
+                payment: {
+		    destination: null,
+		    password: null,
+		    amount: 0
+                },
+
+		/** Max amount model */
+		max: {
+		    max: 0
+		},
+
+                /** Partial transaction model for payment */
+		partial_tx_for_payment: {
+		    hex: null,
+		    complete: false,
+		    final: false
+		},
+
+                /** Partial transaction model for signing */
+		partial_tx_for_signing: {
+		    hex: null,
+		    password: null
+		},
+
+                /** Partial transaction model for broadcast */
+		partial_tx_for_broadcast: {
+		    hex: null,
+		    complete: false,
+		    final: false
+		},
+
+                /** Signed transaction model*/
+		signed_tx: {
+		    complete: false,
+		    tx: null
+		},
             }
         },
         watch: {
@@ -422,6 +578,36 @@
 
                 this.in_fiat = cleaned;
                 this.receive.amount = Number(Number(cleaned / this.ticker[this.pair].last).toFixed(8));
+            },
+            'payment.amount': function (val) {
+                let cleaned = String(val).replace(/[^0-9.]/g, '');
+                let parts = cleaned.split('.');
+
+                if (parts.length > 1) {
+                    cleaned = parts[0] + '.' + parts[1];
+                }
+
+                if (Number(cleaned) !== 0 && Number(cleaned) < 0.00000001) {
+                    cleaned = Number(0.00000001).toFixed(8);
+                }
+
+                this.payment.amount = cleaned;
+                this.pay_in_fiat = Number(Number(cleaned * this.ticker[this.pair].last).toFixed(2));
+            },
+            'pay_in_fiat': function (val) {
+                let cleaned = String(val).replace(/[^0-9.]/g, '');
+                let parts = cleaned.split('.');
+
+                if (parts.length > 1) {
+                    cleaned = parts[0] + '.' + parts[1];
+                }
+
+                if (Number(cleaned) !== 0 && Number(cleaned) < 0.01) {
+                    cleaned = 0.01;
+                }
+
+                this.pay_in_fiat = cleaned;
+                this.payment.amount = Number(Number(cleaned / this.ticker[this.pair].last).toFixed(8));
             },
         },
         computed: {
@@ -627,6 +813,83 @@
                 }).catch((error) => {
                     console.error(error);
                 });
+            },
+
+	    /**
+             * Get the maximum amount that can be sent
+             */
+            getmax() {
+                let vm = this;
+
+                axios.post('/' + vm.prefix + '/api/payment/getmax', {
+                    destination: vm.payment.destination,
+		    password: vm.payment.password
+                }).then((response) => {
+		    Object.assign(vm.max, response.data);
+		    vm.payment.amount = vm.max.max;
+                }).catch((error) => {
+                    console.error(error);
+                });
+            },
+
+	    /**
+             * Create a payment
+             */
+            createPayment() {
+                let vm = this,
+		    tmp = [];
+
+                axios.post('/' + vm.prefix + '/api/payment', {
+                    amount: vm.payment.amount,
+                    destination: vm.payment.destination,
+		    password: vm.payment.password
+                }).then((response) => {
+		    Object.assign(vm.partial_tx_for_payment, response.data);
+		    if (vm.partial_tx_for_payment.complete == true) {
+			axios.post('/' + vm.prefix + '/api/payment/broadcast', {
+			    tx: vm.partial_tx_for_payment.hex
+			}).then((response) => {
+			    Object.assign(tmp, response.data);
+			    vm.signed_tx.complete = tmp[0];
+			    vm.signed_tx.tx = tmp[1];
+			}).catch((error) => {
+			    console.error(error);
+			});
+		    } else {
+			vm.signed_tx.complete = false;
+			vm.signed_tx.tx = 'Waiting for one or more co-signers to sign';
+		    }
+                }).catch((error) => {
+                    console.error(error);
+                });
+            },
+
+	    /**
+             * Sign a transaction
+             */
+            sign() {
+                let vm = this,
+		    tmp = [];
+
+                axios.post('/' + vm.prefix + '/api/payment/sign', {
+                    tx: vm.partial_tx_for_signing.hex,
+                    password: vm.partial_tx_for_signing.password
+                }).then((response) => {
+		    Object.assign(vm.partial_tx_for_broadcast, response.data);
+
+		    axios.post('/' + vm.prefix + '/api/payment/broadcast', {
+			tx: vm.partial_tx_for_broadcast.hex
+                    }).then((response) => {
+			Object.assign(tmp, response.data);
+			vm.signed_tx.complete = tmp[0];
+			vm.signed_tx.tx = tmp[1];
+                    }).catch((error) => {
+			console.error(error);
+                    });
+                }).catch((error) => {
+                    console.error(error);
+                });
+
             },
 
             /**
