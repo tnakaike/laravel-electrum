@@ -423,6 +423,47 @@ class Electrum
     }
 
     /**
+     * Create a wallet.
+     *
+     * @param string $seed
+     * @param string $password
+     *
+     * @return object
+     */
+    public function createWallet($seed = '', $password = '')
+    {
+        if ($seed == '') {
+            return $this->sendRequest('create_new', [
+	        'password' => $password
+            ]);
+	} else {
+            return $this->sendRequest('create_from_seed', [
+	        'seed' => $seed,
+	        'password' => $password
+            ]);
+	}
+    }
+
+    /**
+     * Load a wallet.
+     *
+     * @param string $password
+     *
+     * @return object
+     */
+    public function loadWallet($password = '')
+    {
+	$config = [
+	    'subcommand' => 'load_wallet',
+	    'testnet' => 'True',
+	    'password' => $password
+	];
+        return $this->sendRequest('daemon', [
+	    'config_options' => $config
+        ]);
+    }
+
+    /**
      * Send a request to the Electrum JSON RPC API.
      *
      * @param $method

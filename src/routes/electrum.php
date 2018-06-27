@@ -39,6 +39,11 @@ if (config('electrum.web_interface.enabled', false)) {
                 Route::post('/broadcast', 'AraneaDev\Electrum\App\Api\PaymentController@broadcast');
                 Route::post('/getmax', 'AraneaDev\Electrum\App\Api\PaymentController@getmax');
             });
+
+            Route::prefix('wallet')->group(function () {
+	        Route::post('/create', 'AraneaDev\Electrum\App\Api\WalletController@create');
+	        Route::post('/load', 'AraneaDev\Electrum\App\Api\WalletController@load');
+            });
         });
     });
 }
