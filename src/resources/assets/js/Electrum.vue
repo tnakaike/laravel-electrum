@@ -1,8 +1,8 @@
 <template>
     <div class="electrum">
-        <div class="panel panel-default" v-if="is_loaded">
+        <div class="panel panel-default">
             <div class="panel-body">
-                <div class="pull-right">
+                <div class="pull-right" v-if="is_loaded">
                     <div class="btn-group">
                         <a class="btn btn-sm btn-default btn-block dropdown-toggle" data-toggle="dropdown" href="#">
                             {{ pair }}
@@ -21,25 +21,28 @@
                 </div>
 
                 <ul class="nav nav-tabs">
-                    <li :class="{active: active === '#history'}">
+                    <li :class="{active: active === '#history'}" v-if="is_loaded">
                         <a data-toggle="tab" href="#history" @click="setHash('history')">History</a>
                     </li>
-                    <li :class="{active: active === '#requests'}">
+                    <li :class="{active: active === '#requests'}" v-if="is_loaded">
                         <a data-toggle="tab" href="#requests" @click="setHash('requests')">Requests</a>
                     </li>
-                    <li :class="{active: active === '#receive'}">
+                    <li :class="{active: active === '#receive'}" v-if="is_loaded">
                         <a data-toggle="tab" href="#receive" @click="setHash('receive')">Receive</a>
                     </li>
-                    <li :class="{active: active === '#send'}">
+                    <li :class="{active: active === '#send'}" v-if="is_loaded">
                         <a data-toggle="tab" href="#send" @click="setHash('send')">Send</a>
                     </li>
-                    <li :class="{active: active === '#sign'}">
+                    <li :class="{active: active === '#sign'}" v-if="is_loaded">
                         <a data-toggle="tab" href="#sign" @click="setHash('sign')">Sign</a>
+                    </li>
+                    <li :class="{active: active === '#wallet'}" v-if="is_loaded === false">
+                        <a data-toggle="tab" href="#wallet" @click="setHash('wallet')">Wallet</a>
                     </li>
                 </ul>
 
                 <div class="tab-content">
-                    <div id="history" class="tab-pane fade" :class="{'in active': active === '#history'}">
+                    <div id="history" class="tab-pane fade" :class="{'in active': active === '#history'}" v-if="is_loaded">
                         <div v-if="history.length">
                             <div class="table-header"></div>
                             <div class="table-responsive">
@@ -86,7 +89,7 @@
                         </div>
                     </div>
 
-                    <div id="requests" class="tab-pane fade" :class="{'in active': active === '#requests'}">
+                    <div id="requests" class="tab-pane fade" :class="{'in active': active === '#requests'}" v-if="is_loaded">
                         <div v-if="requests.length">
                             <div class="table-header"></div>
                             <div class="table-responsive">
@@ -135,7 +138,7 @@
                         </div>
                     </div>
 
-                    <div id="receive" class="tab-pane fade" :class="{'in active': active === '#receive'}">
+                    <div id="receive" class="tab-pane fade" :class="{'in active': active === '#receive'}" v-if="is_loaded">
                         <div class="row mt-8">
                             <div class="col-md-9">
                                 <div class="form-group">
@@ -213,7 +216,7 @@
                             </div>
                         </div>
                     </div>
-                    <div id="send" class="tab-pane fade" :class="{'in active': active === '#send'}">
+                    <div id="send" class="tab-pane fade" :class="{'in active': active === '#send'}" v-if="is_loaded">
                         <div class="row mt-8">
                             <div class="col-md-9">
                                 <div class="form-group">
@@ -295,7 +298,7 @@
                             </div>
                         </div>
                     </div>
-                    <div id="sign" class="tab-pane fade" :class="{'in active': active === '#sign'}">
+                    <div id="sign" class="tab-pane fade" :class="{'in active': active === '#sign'}" v-if="is_loaded">
                         <div class="row mt-8">
                             <div class="col-md-9">
                                 <div class="form-group">
@@ -325,9 +328,42 @@
                             </div>
                         </div>
                     </div>
+                    <div id="wallet" class="tab-pane fade" :class="{'in active': active === '#wallet'}" v-if="is_loaded === false">
+                      <div class="row mt-8">
+			<div class="col-md-9">
+			  <div class="form-group">
+                            <label>Please create your wallet!</label>
+                            <div class="input-group input-group-sm col-xs-10">
+                              <input type="text" v-model="wallet.msg" class="form-control input-lg" disabled>
+                            </div>
+			  </div>			  <div class="form-group">
+                            <label>Wallet password (Please input if you want to encrypt your wallet)</label>
+                            <div class="input-group input-group-sm col-xs-10">
+                              <input type="password" v-model="wallet.password" class="form-control input-lg">
+                            </div>
+			  </div>
+			  <div class="form-group">
+                            <label>Seed (Please input if you already have a seed)</label>
+                            <div class="input-group input-group-sm col-xs-10">
+                              <input type="text" v-model="wallet.seed" class="form-control input-lg">
+                            </div>
+			  </div>
+			  <div class="form-group">
+			    <button type="button" class="btn btn-default btn-sm"
+				    @click="createWallet"
+				    :disabled="wallet.status !== 'none'"
+				    >Create wallet</button>
+			    <button type="button" class="btn btn-default btn-sm"
+				    @click="loadWallet"
+				    :disabled="wallet.status !== 'created'"
+				    >Load wallet</button>
+			  </div>
+			</div>
+                      </div>
+                    </div>
                 </div>
             </div>
-            <div class="panel-footer">
+            <div class="panel-footer" v-if="is_loaded">
                 <div class="status pull-right">
                     Electrum {{ version }} | Synchronized: <span v-text="is_sync ? 'yes' : 'no'" :class="{
                     'text-success': is_sync,
@@ -544,6 +580,14 @@
 		    complete: false,
 		    tx: null
 		},
+
+    		/** Wallet model*/
+		wallet: {
+		    passowrd: null,
+		    seed: null,
+		    status: 'none',
+		    msg: 'You do not have a wallet'
+		}
             }
         },
         watch: {
@@ -890,6 +934,46 @@
                     console.error(error);
                 });
 
+            },
+
+	    /**
+             * Create a wallet
+             */
+            createWallet() {
+                let vm = this;
+
+		vm.wallet.msg = 'Creating your wallet';
+		
+                axios.post('/' + vm.prefix + '/api/wallet/create', {
+                    seed: vm.wallet.seed,
+                    password: vm.wallet.password
+                }).then((response) => {
+		    Object.assign(vm.wallet, response.data);
+		    vm.wallet.msg = 'Your wallet created! Please load your wallet after recording your seed.';
+		    vm.wallet.status = 'created';
+                }).catch((error) => {
+                    console.error(error);
+                });
+
+            },
+
+	    /**
+             * Load a wallet
+             */
+            loadWallet() {
+                let vm = this;
+
+		vm.wallet.msg = 'Loading your wallet';
+		
+		axios.post('/' + vm.prefix + '/api/wallet/load', {
+		    password: vm.wallet.password
+                }).then((response) => {
+		    Object.assign(wallet, response.data);
+		    vm.wallet.msg = 'Your wallet loaded! Please reload to look at your wallet.';
+		    vm.wallet.status = 'loaded';
+                }).catch((error) => {
+		    console.error(error);
+                });
             },
 
             /**
