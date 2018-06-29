@@ -331,12 +331,25 @@
                     <div id="wallet" class="tab-pane fade" :class="{'in active': active === '#wallet'}" v-if="is_loaded === false">
                       <div class="row mt-8">
 			<div class="col-md-9">
-			  <div class="form-group">
-                            <label>Please create your wallet!</label>
-                            <div class="input-group input-group-sm col-xs-10">
-                              <input type="text" v-model="wallet.msg" class="form-control input-lg" disabled>
+			  <div class="row">
+			    <div class="col-md-8">
+			      <div class="form-group">
+				<label>Please create your wallet!</label>
+				<div class="input-group input-group-sm col-xs-12">
+				  <input type="text" v-model="wallet.msg" class="form-control input-lg" disabled>
+				</div>
+			      </div>
+			    </div>
+			    <div class="col-md-4">
+			      <label>Multisig wallet</label>
+			      <div class="form-group">
+				<div class="input-group input-group-sm col-xs-4">
+				  <input type="checkbox" v-model="wallet.is_multisig" class="form-control input-md">
+				</div>
+			      </div>
                             </div>
-			  </div>			  <div class="form-group">
+			  </div>
+			  <div class="form-group">
                             <label>Wallet password (Please input if you want to encrypt your wallet)</label>
                             <div class="input-group input-group-sm col-xs-10">
                               <input type="password" v-model="wallet.password" class="form-control input-lg">
@@ -348,10 +361,36 @@
                               <input type="text" v-model="wallet.seed" class="form-control input-lg">
                             </div>
 			  </div>
+			  <div class="form-group" v-if="wallet.is_multisig">
+                            <label>Your public key. Please share it with your co-signer.</label>
+                            <div class="input-group input-group-sm col-xs-10">
+                              <input type="text" v-model="wallet.key" class="form-control input-lg" disabled>
+                              <span class="input-group-btn">
+                                <button type="button" class="btn btn-default copy"
+                                        :data-clipboard-text="wallet.key">Copy</button>
+                              </span>
+                            </div>
+			  </div>
+			  <div class="form-group" v-if="wallet.is_multisig">
+                            <label>Your co-signer public key</label>
+                            <div class="input-group input-group-sm col-xs-10">
+                              <input type="text" v-model="wallet.cosignerkey" class="form-control input-lg">
+                            </div>
+			  </div>
 			  <div class="form-group">
 			    <button type="button" class="btn btn-default btn-sm"
+				    v-if="wallet.is_multisig && wallet.seed === null"
+				    @click="createMultisigKey"
+				    :disabled="wallet.status !== 'none' || wallet.key !== null"
+				    >Create seed and key</button>
+			    <button type="button" class="btn btn-default btn-sm"
+				    v-if="wallet.is_multisig && wallet.seed !== null"
+				    @click="createMultisigKey"
+				    :disabled="wallet.status !== 'none' || wallet.key !== null"
+				    >Create key</button>
+			    <button type="button" class="btn btn-default btn-sm"
 				    @click="createWallet"
-				    :disabled="wallet.status !== 'none'"
+				    :disabled="wallet.status !== 'none' || (wallet.is_multisig && (wallet.seed === null || wallet.key === null || wallet.cosignerkey === null))"
 				    >Create wallet</button>
 			    <button type="button" class="btn btn-default btn-sm"
 				    @click="loadWallet"
@@ -586,7 +625,10 @@
 		    passowrd: null,
 		    seed: null,
 		    status: 'none',
-		    msg: 'You do not have a wallet'
+		    msg: 'You do not have a wallet',
+		    is_multisig: false,
+		    key: null,
+		    cosignerkey: null
 		}
             }
         },
@@ -943,17 +985,31 @@
                 let vm = this;
 
 		vm.wallet.msg = 'Creating your wallet';
-		
-                axios.post('/' + vm.prefix + '/api/wallet/create', {
-                    seed: vm.wallet.seed,
-                    password: vm.wallet.password
-                }).then((response) => {
-		    Object.assign(vm.wallet, response.data);
-		    vm.wallet.msg = 'Your wallet created! Please load your wallet after recording your seed.';
-		    vm.wallet.status = 'created';
-                }).catch((error) => {
-                    console.error(error);
-                });
+
+		if (vm.wallet.is_multisig) {
+                    axios.post('/' + vm.prefix + '/api/wallet/multisig/create', {
+			seed: vm.wallet.seed,
+			cosignerkey: vm.wallet.cosignerkey,
+			password: vm.wallet.password
+                    }).then((response) => {
+			Object.assign(vm.wallet, response.data);
+			vm.wallet.msg = 'Your wallet created! Please load your wallet after recording your seed.';
+			vm.wallet.status = 'created';
+                    }).catch((error) => {
+			console.error(error);
+                    });
+		} else {
+                    axios.post('/' + vm.prefix + '/api/wallet/create', {
+			seed: vm.wallet.seed,
+			password: vm.wallet.password
+                    }).then((response) => {
+			Object.assign(vm.wallet, response.data);
+			vm.wallet.msg = 'Your wallet created! Please load your wallet after recording your seed.';
+			vm.wallet.status = 'created';
+                    }).catch((error) => {
+			console.error(error);
+                    });
+		}
 
             },
 
@@ -968,13 +1024,34 @@
 		axios.post('/' + vm.prefix + '/api/wallet/load', {
 		    password: vm.wallet.password
                 }).then((response) => {
-		    Object.assign(wallet, response.data);
+		    Object.assign(vm.wallet, response.data);
 		    vm.wallet.msg = 'Your wallet loaded! Please reload to look at your wallet.';
 		    vm.wallet.status = 'loaded';
                 }).catch((error) => {
 		    console.error(error);
                 });
             },
+
+	    /**
+             * Create a key for a multisig wallet
+             */
+            createMultisigKey() {
+                let vm = this;
+
+		vm.wallet.msg = 'Creating your key';
+
+		axios.post('/' + vm.prefix + '/api/wallet/multisigkey/create', {
+		    seed: vm.wallet.seed
+                }).then((response) => {
+		    Object.assign(vm.wallet, response.data);
+		    console.log(wallet.seed);
+		    console.log(wallet.key);
+		    vm.wallet.msg = 'Your key created! Please input the public key of your co-signer to create a multisig wallet.';
+                }).catch((error) => {
+		    console.error(error);
+                });
+
+	    },
 
             /**
              * Set the active tab/hash
