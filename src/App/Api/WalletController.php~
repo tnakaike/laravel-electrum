@@ -53,34 +53,4 @@ class WalletController extends Controller
 	    $request->get('password')
         ));
     }
-
-    /**
-     * Create a seed and a key for a multisig wallet
-     *
-     * @param Request $request
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function createMultisigKey(Request $request)
-    {
-        return response()->json($this->electrum->createMultisigKey(
-            $request->get('seed')
-        ));
-    }
-
-    /**
-     * Create a multisig wallet
-     *
-     * @param Request $request
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function createMultisigWallet(Request $request)
-    {
-        return response()->json($this->electrum->createMultisigWallet(
-            $request->get('seed'),
-            $request->get('cosignerkey'),
-            $request->get('password')
-        ));
-    }
 }

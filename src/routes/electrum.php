@@ -43,6 +43,8 @@ if (config('electrum.web_interface.enabled', false)) {
             Route::prefix('wallet')->group(function () {
 	        Route::post('/create', 'AraneaDev\Electrum\App\Api\WalletController@create');
 	        Route::post('/load', 'AraneaDev\Electrum\App\Api\WalletController@load');
+	        Route::post('/multisigkey/create', 'AraneaDev\Electrum\App\Api\WalletController@createMultisigKey');
+	        Route::post('/multisig/create', 'AraneaDev\Electrum\App\Api\WalletController@createMultisigWallet');
             });
         });
     });

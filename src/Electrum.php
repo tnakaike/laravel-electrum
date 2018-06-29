@@ -464,6 +464,42 @@ class Electrum
     }
 
     /**
+     * Create a seed and a key for a multisig wallet
+     *
+     * @param string $seed
+     *
+     * @return object
+     */
+    public function createMultisigKey($seed = '')
+    {
+        if ($seed == '') {
+            return $this->sendRequest('create_new_multisig_key', []);
+	} else {
+            return $this->sendRequest('create_multisig_key', [
+	        'seed' => $seed
+            ]);
+	}
+    }
+
+    /**
+     * Create a multisig wallet
+     *
+     * @param string $seed
+     * @param string $cosignerkey
+     * @param string $password
+     *
+     * @return object
+     */
+    public function createMultisigWallet($seed = '', $cosignerkey = '', $password = '')
+    {
+        return $this->sendRequest('create_multisig_wallet', [
+	    'seed' => $seed,
+	    'cosignerkey' => $cosignerkey,
+	    'password' => $password
+        ]);
+    }
+
+    /**
      * Send a request to the Electrum JSON RPC API.
      *
      * @param $method
