@@ -319,7 +319,7 @@
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label>Singned transaction</label>
+                                    <label>Signed transaction</label>
                                     <div class="input-group input-group-sm col-xs-10">
                                         <input type="text" v-model="signed_tx.tx" class="form-control address"
                                                disabled>
