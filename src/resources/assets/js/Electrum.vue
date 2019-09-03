@@ -693,7 +693,7 @@
                 }
 
                 this.pay_in_fiat = cleaned;
-                this.payment.amount = Number(Number(cleaned / this.ticker[this.pair].last).toFixed(8));
+                /* this.payment.amount = Number(Number(cleaned / this.ticker[this.pair].last).toFixed(8)); */
             },
         },
         computed: {
