@@ -160,12 +160,12 @@
                                 <div class="row">
                                     <div class="col-md-4">
                                         <div class="form-group">
-                                            <label>Amount in BTC</label>
+                                            <label>Amount in Tokens</label>
                                             <div class="input-group input-group-sm">
                                                 <input type="text" v-model="receive.amount"
                                                        class="form-control input-sm">
                                                 <span class="input-group-addon">
-                                                    BTC
+                                                    Tokens
                                                 </span>
                                             </div>
                                         </div>
@@ -234,12 +234,12 @@
                                 <div class="row">
                                     <div class="col-md-3">
                                         <div class="form-group">
-                                            <label>Amount in BTC</label>
+                                            <label>Amount in Tokens</label>
                                             <div class="input-group input-group-sm">
                                                 <input type="text" v-model="payment.amount"
                                                        class="form-control input-sm">
                                                 <span class="input-group-addon">
-                                                    BTC
+                                                    Tokens
                                                 </span>
                                             </div>
                                         </div>
@@ -403,18 +403,20 @@
                 </div>
             </div>
             <div class="panel-footer" v-if="is_loaded">
+	        <!--
                 <div class="status pull-right">
                     Electrum {{ version }} | Synchronized: <span v-text="is_sync ? 'yes' : 'no'" :class="{
                     'text-success': is_sync,
                     'text-danger': !is_sync
                 }"></span>
                 </div>
+		-->
                 <div class="balance">
-                    Balance: <span v-text="Number(Number(balance.confirmed).toFixed(8))"></span> BTC
+                    Balance: <span v-text="Number(Number(balance.confirmed).toFixed(8))"></span> Tokens
                     <span v-if="balance.unconfirmed"> (+ <span
-                            v-text="Number(Number(balance.unconfirmed).toFixed(8))"></span> BTC unconfirmed)</span>
+                            v-text="Number(Number(balance.unconfirmed).toFixed(8))"></span> Tokens unconfirmed)</span>
                     <span> ({{( balance.confirmed * ticker[pair].last).toFixed(2) }} {{ pair }})</span>
-                    <span> 1 BTC~{{ ticker[pair].last }} {{ pair }}</span>
+                    <span> 1 Token~{{ ticker[pair].last }} {{ pair }}</span>
                 </div>
             </div>
         </div>
