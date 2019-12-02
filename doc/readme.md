@@ -1,7 +1,7 @@
 # Laravel and Electrum APIs
 
 | URL | Laravel frontend (src/App/Api/*.php) | Laravel backend (src/Electrum.php) | Electrum (electrum/commands.py)|
-
+----|----|----|----
 | POST /api/wallet/create | WalletController.create | createWallet | create_new (create a new wallet with key and seed), create_from_seed (create a wallet from a given seed) |
 | POST /api/wallet/load | WalletController.load | loadWallet | load_wallet (to a daemon) |
 | POST /api/wallet/multisig/create | WalletController.createMultisigWallet | createMultisigWallet | create_multisig_wallet (create a multisig wallet from a given seed) |
