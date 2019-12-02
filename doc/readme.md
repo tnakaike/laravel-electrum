@@ -15,7 +15,7 @@
 | GET /api/history | HistoryController.index | getHistory | history | Get a transaction history |
 | POST /api/payment/getmax | PaymentController.getmax  | getmax | getmax | Get the maximum amount of coins to be sent |
 | POST /api/payment | PaymentController.create | createPayment | payto | Create a payment transaction |
-| POST /api/payment/broadcast | PaymentController.broadcast | broadcast | broadcast: Broadcast a transaction |
+| POST /api/payment/broadcast | PaymentController.broadcast | broadcast | broadcast | Broadcast a transaction |
 | POST /api/payment/sign | PaymentController.sign | sign | signtransaction | Sign a transaction |
 | POST /api/requests | RequestsController.create | createRequest | addrequest | Create a payment request |
 | DELETE /api/requests/ | RequestsController.clear | clearRequests | clearrequests | Clear all of the payment requests |
