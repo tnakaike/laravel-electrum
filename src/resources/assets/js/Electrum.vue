@@ -20,7 +20,27 @@
                     </div>
                 </div>
 
-                <ul class="nav nav-tabs">
+                <ul class="nav nav-tabs nav-fill">
+                    <li class="nav-item" v-if="is_loaded">
+                        <a class="nav-link" data-toggle="tab" href="#history" @click="setHash('history')">History</a>
+                    </li>
+                    <li class="nav-item" v-if="is_loaded">
+                        <a class="nav-link" data-toggle="tab" href="#requests" @click="setHash('requests')">Requests</a>
+                    </li>
+                    <li class="nav-item" v-if="is_loaded">
+                        <a class="nav-link" data-toggle="tab" href="#receive" @click="setHash('receive')">Receive</a>
+                    </li>
+                    <li class="nav-item" v-if="is_loaded">
+                        <a class="nav-link" data-toggle="tab" href="#send" @click="setHash('send')">Send</a>
+                    </li>
+                    <li class="nav-item" v-if="is_loaded">
+                        <a class="nav-link" data-toggle="tab" href="#sign" @click="setHash('sign')">Sign</a>
+                    </li>
+                    <li class="nav-item" v-if="is_loaded === false">
+                        <a class="nav-link" data-toggle="tab" href="#wallet" @click="setHash('wallet')">Wallet</a>
+                    </li>
+
+<!--
                     <li :class="{active: active === '#history'}" v-if="is_loaded">
                         <a data-toggle="tab" href="#history" @click="setHash('history')">History</a>
                     </li>
@@ -39,6 +59,7 @@
                     <li :class="{active: active === '#wallet'}" v-if="is_loaded === false">
                         <a data-toggle="tab" href="#wallet" @click="setHash('wallet')">Wallet</a>
                     </li>
+-->
                 </ul>
 
                 <div class="tab-content">
@@ -70,9 +91,7 @@
                                     <tr v-for="transaction in history" @click="getTransactionDetails(transaction)"
                                         class="clickable">
                                         <td class="no-wrap">
-                                    <span class="glyphicon"
-                                          :class="{'glyphicon-ok text-success': transaction.confirmations >= 6}">
-                                    </span>
+                                            <span class="glyphicon" :class="{'glyphicon-ok text-success': transaction.confirmations >= 1}"></span>
                                         </td>
                                         <td class="no-wrap" v-text="transaction.date"></td>
                                         <td class="no-remaining" v-text="transaction.txid"></td>
@@ -147,7 +166,7 @@
                                         <input type="text" v-model="receive.address" class="form-control address"
                                                disabled>
                                         <span class="input-group-btn">
-                                            <button type="button" class="btn btn-default copy"
+                                            <button type="button" class="btn btn-primary btn-sm copy"
                                                     :data-clipboard-text="receive.address">Copy</button>
                                         </span>
                                     </div>
@@ -185,7 +204,7 @@
                                     <div class="col-md-4">
                                         <label>Expires</label>
                                         <div class="form-group">
-                                            <button type="button" class="btn btn-default btn-sm pull-right"
+                                            <button type="button" class="btn btn-primary btn-sm pull-right"
                                                     @click="addRequest"
                                                     :disabled="receive.amount === 0 || in_fiat === 0">
                                                 <span class="glyphicon glyphicon-send"></span> Create request
@@ -259,7 +278,7 @@
                                     <div class="col-md-2">
 				        <label style="color:white">Max</label>
                                         <div class="form-group">
-                                            <button type="button" class="btn btn-default btn-sm"
+                                            <button type="button" class="btn btn-primary btn-sm"
                                                     @click="getmax()"
                                                     :disabled="payment.destination === null || payment.password === null">
                                                 <span class="glyphicon glyphicon-send"></span> Max
@@ -269,7 +288,7 @@
                                     <div class="col-md-2">
 				        <label style="color:white">Send</label>
                                         <div class="form-group">
-                                            <button type="button" class="btn btn-default btn-sm"
+                                            <button type="button" class="btn btn-primary btn-sm"
                                                     @click="createPayment"
                                                     :disabled="payment.amount === 0 || pay_in_fiat === 0 || payment.destination === null || payment.password === null">
                                                 <span class="glyphicon glyphicon-send"></span> Send
@@ -312,7 +331,7 @@
                                     <div class="input-group input-group-sm col-xs-10">
                                         <input type="password" v-model="partial_tx_for_signing.password" class="form-control input-lg">
                                         <span class="input-group-btn">
-					    <button type="button" class="btn btn-default btn-sm"
+					    <button type="button" class="btn btn-primary btn-sm"
 						    @click="sign"
 						    :disabled="partial_tx_for_signing.hex === null || partial_tx_for_signing.password === null">Sign</button>
                                         </span>
@@ -419,8 +438,9 @@
             </div>
         </div>
 
-        <bootstrap-modal ref="tx_details" :needHeader="false" :needFooter="false" size="medium" v-if="transaction.txid">
-            <div slot="body">
+        <!-- <b-modal ref="tx_details" :needHeader="false" :needFooter="false" size="medium" v-if="transaction.txid"> -->
+        <b-modal ref="tx_details" size="lg" title="Transaction details" content-class="shadow" :hide-header="false" :hide-footer="true">
+            <!-- <div slot="body"> -->
                 <table class="table table-details table-condensed table-striped">
                     <tbody>
                     <tr>
@@ -430,11 +450,13 @@
                     <tr>
                         <th class="no-wrap">Status:&nbsp;</th>
                         <td class="remaining">{{ transaction.confirmations }} confirmations</td>
+                        <!--
                         <td class="qr-cell" rowspan="6">
                             <div class="qr-code img-thumbnail img-responsive">
                                 <qr-code :text="transaction.txid"></qr-code>
                             </div>
                         </td>
+                        -->
                     </tr>
                     <tr>
                         <th class="no-wrap">Label:&nbsp;</th>
@@ -456,9 +478,9 @@
                     </tr>
                     </tbody>
                 </table>
-            </div>
-        </bootstrap-modal>
-
+            <!-- </div> -->
+        </b-modal>
+    
         <bootstrap-modal ref="request_details" :needHeader="false" :needFooter="false" size="medium" v-if="request.id">
             <div slot="body">
                 <table class="table table-details table-condensed table-striped">
@@ -508,6 +530,8 @@
     import Clipboard from 'clipboard';
     import qrCode from 'vue-qrcode-component';
     import bootstrapModal from 'vue2-bootstrap-modal';
+    import { BootstrapVue, BModal, BForm } from 'bootstrap-vue';
+    Vue.use(BootstrapVue)
 
     export default {
         props: ['prefix', 'currency'],
@@ -878,7 +902,8 @@
 
                 vm.transaction = transaction;
                 vm.$nextTick(function () {
-                    vm.$refs.tx_details.open();
+                    vm.$refs.tx_details.show();
+                    // vm.$refs.tx_details.open();
                 });
             },
 
@@ -1153,5 +1178,8 @@
                 width: 100%;
             }
         }
+    }
+    .modal-backdrop {
+        opacity: 0.5;
     }
 </style>
