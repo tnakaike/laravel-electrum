@@ -385,8 +385,10 @@
                             <div class="input-group input-group-sm col-xs-10">
                               <input type="text" v-model="wallet.key" class="form-control input-lg" disabled>
                               <span class="input-group-btn">
-                                <button type="button" class="btn btn-default copy"
-                                        :data-clipboard-text="wallet.key">Copy</button>
+                                <button type="button" class="btn btn-primary btn-sm copy"
+                                        :data-clipboard-text="wallet.key"
+                                        :disabled="wallet.key === null"
+                                        >Copy</button>
                               </span>
                             </div>
 			  </div>
@@ -413,7 +415,7 @@
 				    >Create wallet</button>
 			    <button type="button" class="btn btn-default btn-sm"
 				    @click="loadWallet"
-				    :disabled="wallet.status !== 'created'"
+				    :disabled="wallet.password === null || wallet.seed === null"
 				    >Load wallet</button>
 			  </div>
 			</div>
